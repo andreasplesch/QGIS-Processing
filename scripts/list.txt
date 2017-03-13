@@ -1,3 +1,4 @@
+DEM_raster_to_X3D.py,0.1,Convert DEM to X3D GeoElevationGrid
 Batch_replace_in_string_via_regex_dictionary.py,1,Batch replace in string via regex dictionary
 Buffer Contour.py,1.0,Buffer Contour
 CSV_R-G-B_to_categorized_style.py,1.1,CSV R-G-B to categorized style
