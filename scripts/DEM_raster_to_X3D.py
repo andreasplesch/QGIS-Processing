@@ -68,7 +68,12 @@ projection =  X3DProjections[crsProjection] # start with projection
 
 geoSystem = [ projection ]
 
-# get ellipsoid
+if projection == 'UTM':
+    zone = 'Z'
+    zoneNo = crsDescription[crsDescription.rfind(' '):].strip() # after last space, has N or S suffix
+    zone += zoneNo[0:-1]
+    geoSystem.append(zone)
+    geoSystem.append(zoneNo[-1]) # N or S
 
 # ellipsoid: directly from major axis, flattening values, mapped to 2 letter code
 # get major axis, flattengin from wkt SPHEROID:
@@ -76,22 +81,15 @@ geoSystem = [ projection ]
 # then use dictionary to lookup code:
 
 spheroid = [float(str) for str in crsWkt[crsWkt.find('SPHEROID'):].split(',')[1:3]] # 'major axis', 'flattening'
-spheroidTuple = (spheroid[0], spheroid[1])
+spheroidTuple = (spheroid[0], spheroid[1]) # works, but perhaps add some rounding round(s*1e9)/1e9
 if spheroidTuple not in X3DEllipsoids.keys():
     raise GeoAlgorithmExecutionException('%s spheroid not supported by X3D. Reproject first.' % crsDescription)
 
 ellipsoidCode = X3DEllipsoids[spheroidTuple] # see above
 
 geoSystem.append(ellipsoidCode)
-
-if projection == 'UTM':
-    zone = 'Z'
-    zoneNo = crsDescription[crsDescription.rfind(' '):].strip() # last space, has N or S suffix
-    zone += zoneNo[0:-1]
-    geoSystem.append(zone)
-    geoSystem.append(zoneNo[-1]) # N or S
-
-gS = ['"%s"' % s for s in geoSystem] # add  double quotes for multi string
+    
+gS = ['"%s"' % s for s in geoSystem] # add double quotes for multi string
 
 # origin
 e = r.extent()
@@ -111,7 +109,8 @@ f.write( "  xDimension='%d'\n" % xDimension)
 f.write( "  zDimension='%d'\n" % zDimension)
 f.write( "  xSpacing='%f'\n" % xSpacing )
 f.write( "  zSpacing='%f'\n" % zSpacing )
-f.write( "  geoSystem='%s'\n" % " ".join(gS) )
+if geoSystem != ['GD','WE']:
+    f.write( "  geoSystem='%s'\n" % " ".join(gS) )
 f.write( "  height=' ")
 for v in values:
     if v is None: v = noDataValue
@@ -120,12 +119,12 @@ f.write( "'\n" )
 f.write( ">\n" )
 
 f.write( "  <MetadataSet name='Raster metadata' >\n")
-f.write( "    <MetadataString name='title' value='%s' ></MetdadataString>\n" % r.name() )
-f.write( "    <MetadataString name='attribution' value='%s' ></MetdadataString>\n" % r.attribution() )
-f.write( "    <MetadataString name='attributionReference' value='%s' ></MetdadataString>\n" % r.attributionUrl() )
-f.write( "    <MetadataString name='generator' value='QGIS Processing DEM_raster_to_X3D.py' ></MetdadataString>\n" )
+f.write( "    <MetadataString name='title' value='%s' ></MetadataString>\n" % r.name() )
+f.write( "    <MetadataString name='attribution' value='%s' ></MetadataString>\n" % r.attribution() )
+f.write( "    <MetadataString name='attributionReference' value='%s' ></MetadataString>\n" % r.attributionUrl() )
+f.write( "    <MetadataString name='generator' value='QGIS Processing DEM_raster_to_X3D.py' ></MetadataString>\n" )
 now = QDateTime.currentDateTime()
-f.write( "    <MetadataString name='generated' value='%s' ></MetdadataString>\n" % now.toString() )
+f.write( "    <MetadataString name='generated' value='%s' ></MetadataString>\n" % now.toString() )
 f.write ( "  </MetadataSet>\n")
 
 f.write( "</GeoElevationGrid>" )
