@@ -1,5 +1,5 @@
 ##X3D=group
-##generate_X3D_ColorAppearance=name
+##generate X3D color Appearance=name
 ##ambientIntensity=number 0.2
 ##diffuseColor=string 0.8 0.8 0.8 
 ##emissiveColor=string 0 0 0
